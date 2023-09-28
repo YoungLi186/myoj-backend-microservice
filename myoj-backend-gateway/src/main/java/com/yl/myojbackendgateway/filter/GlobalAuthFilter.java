@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class GlobalAuthFilter implements GlobalFilter, Ordered {
 
-    private AntPathMatcher antPathMatcher = new AntPathMatcher();
+    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -43,8 +43,6 @@ public class GlobalAuthFilter implements GlobalFilter, Ordered {
             // Mono 反应式编程
             return response.writeWith(Mono.just(dataBuffer));
         }
-
-        //todo 优化点改造为jwt登录,在此处鉴权
         return chain.filter(exchange);
     }
 

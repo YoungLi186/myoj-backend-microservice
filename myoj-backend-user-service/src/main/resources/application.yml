@@ -13,10 +13,10 @@ spring:
       matching-strategy: ant_path_matcher
 
   # session 配置
-  session:
-    store-type: redis
-    # 30 天过期
-    timeout: 2592000
+#  session:
+#    store-type: redis
+#    # 30 天过期
+#    timeout: 2592000
 
   # 数据库配置
   datasource:
@@ -26,11 +26,11 @@ spring:
     password: 123456
 
     # Redis 配置
-  redis:
-    database: 1
-    host: localhost
-    port: 6379
-    timeout: 50000
+#  redis:
+#    database: 1
+#    host: localhost
+#    port: 6379
+#    timeout: 50000
   #     password: 123456
   #nacos
   cloud:

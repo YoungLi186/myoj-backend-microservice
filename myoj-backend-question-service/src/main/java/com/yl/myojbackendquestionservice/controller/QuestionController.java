@@ -82,7 +82,8 @@ public class QuestionController {
         }
 
         questionService.validQuestion(question, true);
-        User loginUser = userFeignClient.getLoginUser(request);
+        String token = request.getHeader("Authorization");
+        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
         question.setUserId(loginUser.getId());
         question.setFavourNum(0);
         question.setThumbNum(0);
@@ -104,7 +105,8 @@ public class QuestionController {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = userFeignClient.getLoginUser(request);
+        String token = request.getHeader("Authorization");
+        User user = userFeignClient.getLoginUserAndPermitNull(token);
         long id = deleteRequest.getId();
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
@@ -194,7 +196,8 @@ public class QuestionController {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
 
-        User loginUser = userFeignClient.getLoginUser(request);
+        String token = request.getHeader("Authorization");
+        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
         if (!loginUser.getId().equals(question.getUserId()) && !userFeignClient.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
@@ -235,7 +238,8 @@ public class QuestionController {
         if (questionQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userFeignClient.getLoginUser(request);
+        String token = request.getHeader("Authorization");
+        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
         questionQueryRequest.setUserId(loginUser.getId());
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
@@ -277,8 +281,9 @@ public class QuestionController {
 
 
         // 参数校验
+        String token = request.getHeader("Authorization");
         questionService.validQuestion(question, false);
-        User loginUser = userFeignClient.getLoginUser(request);
+        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
         long id = questionEditRequest.getId();
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
@@ -325,7 +330,8 @@ public class QuestionController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // 登录成功才可以提交题目
-        final User loginUser = userFeignClient.getLoginUser(request);
+        String token = request.getHeader("Authorization");
+        final User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
         long result = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
         return ResultUtils.success(result);
     }
@@ -345,7 +351,8 @@ public class QuestionController {
         long size = questionSubmitQueryRequest.getPageSize();
         Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size),
                 questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
-        User loginUser = userFeignClient.getLoginUser(request);
+        String token = request.getHeader("Authorization");
+        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
         return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage, loginUser));
 
     }

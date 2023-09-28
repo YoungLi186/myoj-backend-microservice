@@ -1,14 +1,14 @@
 package com.yl.myojbackenduserservice.controller.inner;
 
+import cn.hutool.core.util.StrUtil;
+import com.yl.myojbackendcommon.utils.JwtUtils;
 import com.yl.myojbackendmodel.entity.User;
 import com.yl.myojbackendserviceclient.service.UserFeignClient;
 import com.yl.myojbackenduserservice.service.UserService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.Collection;
 import java.util.List;
@@ -47,11 +47,20 @@ public class UserInnerController implements UserFeignClient {
      * @param idList
      * @return
      */
+    @Override
     @GetMapping("/get/ids")
     public List<User> listByIds(@RequestParam("idList") Collection<Long> idList) {
 
         return userService.listByIds(idList);
     }
 
-
+    @Override
+    @GetMapping( "/get/loginUser/{token}")
+    public User getLoginUserAndPermitNull(@PathVariable("token") String token) {
+        if (StrUtil.isNotBlank(token)){
+            Long usrId = JwtUtils.getClaims(token).get("id", Long.class);
+            return userService.getById(usrId);
+        }
+        return  null;
+    }
 }

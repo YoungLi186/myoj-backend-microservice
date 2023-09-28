@@ -1,20 +1,15 @@
 package com.yl.myojbackendserviceclient.service;
 
-import com.yl.myojbackendcommon.common.ErrorCode;
-import com.yl.myojbackendcommon.exception.BusinessException;
 import com.yl.myojbackendmodel.entity.User;
 import com.yl.myojbackendmodel.enums.UserRoleEnum;
 import com.yl.myojbackendmodel.vo.UserVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.List;
-
-import static com.yl.myojbackendcommon.constant.UserConstant.USER_LOGIN_STATE;
 
 
 /**
@@ -44,14 +39,11 @@ public interface UserFeignClient {
     /**
      * 获取当前登录用户
      *内部调用，为空不用抛出异常
-     * @param request
+     * @param token
      * @return
      */
-   default User getLoginUser(HttpServletRequest request){
-       // 先判断是否已登录
-       Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-       return (User) userObj;
-   }
+    @GetMapping("/get/loginUser/{token}")
+   User getLoginUserAndPermitNull(@PathVariable("token") String token);
 
 
 

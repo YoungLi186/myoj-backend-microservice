@@ -1,5 +1,6 @@
 package com.yl.myojbackenduserservice.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -7,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yl.myojbackendcommon.common.ErrorCode;
 import com.yl.myojbackendcommon.constant.CommonConstant;
 import com.yl.myojbackendcommon.exception.BusinessException;
+import com.yl.myojbackendcommon.utils.JwtUtils;
 import com.yl.myojbackendcommon.utils.SqlUtils;
 import com.yl.myojbackendmodel.dto.user.UserQueryRequest;
 import com.yl.myojbackendmodel.entity.User;
@@ -23,7 +25,9 @@ import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import static com.yl.myojbackendcommon.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -101,9 +105,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
-        // 3. 记录用户的登录态
+
+        // 3、将登录信息保持在token中，通过JWT生成token(存入id和账号)
+        Map<String, Object> tokenMap = new HashMap<>();
+        tokenMap.put("id", user.getId());
+        tokenMap.put("userAccount", user.getUserAccount());
+        String token = JwtUtils.getToken(tokenMap);
+
+        // 4. 记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
-        return this.getLoginUserVO(user);
+        LoginUserVO loginUserVO = this.getLoginUserVO(user);
+        loginUserVO.setToken(token);
+
+        return loginUserVO;
     }
 
     /**
@@ -114,19 +128,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public User getLoginUser(HttpServletRequest request) {
-        // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null || currentUser.getId() == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+
+
+        String token = request.getHeader("Authorization");
+        if(StrUtil.isNotBlank(token)) {
+            Long usrId = JwtUtils.getClaims(token).get("id", Long.class);
+            User currentUser = getById(usrId);
+            if (currentUser == null || currentUser.getId() == null) {
+                throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            }
         }
-        // 从数据库查询（追求性能的话可以注释，直接走缓存）
-        long userId = currentUser.getId();
-        currentUser = this.getById(userId);
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        return currentUser;
+
+        throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+
     }
 
     /**
@@ -137,15 +151,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public User getLoginUserPermitNull(HttpServletRequest request) {
-        // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null || currentUser.getId() == null) {
-            return null;
+        String token = request.getHeader("Authorization");
+        if (StrUtil.isNotBlank(token)){
+            Long usrId = JwtUtils.getClaims(token).get("id", Long.class);
+            return this.getById(usrId);
         }
-        // 从数据库查询（追求性能的话可以注释，直接走缓存）
-        long userId = currentUser.getId();
-        return this.getById(userId);
+        return  null;
     }
 
     /**
