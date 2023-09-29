@@ -37,7 +37,6 @@ public class CodeMqConsumer {
     private QuestionFeignClient questionFeignClient;
 
 
-
     /**
      * 指定程序监听的消息队列和确认机制
      *
