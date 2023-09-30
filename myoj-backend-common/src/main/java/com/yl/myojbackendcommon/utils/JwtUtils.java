@@ -14,9 +14,9 @@ import java.util.Map;
 public class JwtUtils {
 
     /**
-     * TOKEN的有效期1小时（S）
+     * TOKEN的有效期半小时
      */
-    private static final int TOKEN_TIME_OUT = 7 * 24 * 3600;
+    private static final int TOKEN_TIME_OUT = 1800;
 
     /**
      * 加密KEY

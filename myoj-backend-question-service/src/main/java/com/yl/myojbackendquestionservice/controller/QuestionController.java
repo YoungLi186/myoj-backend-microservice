@@ -1,5 +1,6 @@
 package com.yl.myojbackendquestionservice.controller;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
@@ -352,7 +353,11 @@ public class QuestionController {
         Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size),
                 questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
         String token = request.getHeader("Authorization");
-        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+        User loginUser = null;
+        if (StrUtil.isNotBlank(token)) {
+            loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+        }
+
         return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage, loginUser));
 
     }

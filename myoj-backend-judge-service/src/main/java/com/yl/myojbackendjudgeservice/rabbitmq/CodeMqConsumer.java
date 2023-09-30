@@ -1,12 +1,15 @@
 package com.yl.myojbackendjudgeservice.rabbitmq;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.rabbitmq.client.Channel;
 import com.yl.myojbackendcommon.common.ErrorCode;
 import com.yl.myojbackendcommon.exception.BusinessException;
 import com.yl.myojbackendjudgeservice.judge.JudgeService;
+import com.yl.myojbackendmodel.codesandbox.JudgeInfo;
 import com.yl.myojbackendmodel.entity.Question;
 import com.yl.myojbackendmodel.entity.QuestionSubmit;
+import com.yl.myojbackendmodel.enums.JudgeInfoMessageEnum;
 import com.yl.myojbackendmodel.enums.QuestionSubmitStatusEnum;
 import com.yl.myojbackendserviceclient.service.QuestionFeignClient;
 import lombok.SneakyThrows;
@@ -63,21 +66,29 @@ public class CodeMqConsumer {
                 channel.basicNack(deliveryTag, false, false);
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "判题失败");
             }
-            log.info("新提交的信息：" + questionSubmit);
+
             // 设置通过数
             Long questionId = questionSubmit.getQuestionId();
-            log.info("题目:" + questionId);
+            log.info("题目id:" + questionId);
+
             Question question = questionFeignClient.getQuestionById(questionId);
             Integer acceptedNum = question.getAcceptedNum();
+            Integer submitNum = question.getSubmitNum()+1;
+            //根据判题的信息判断是否ac
+            String judgeInfoStr = questionSubmit.getJudgeInfo();
+            JudgeInfo judgeInfo = JSONUtil.toBean(judgeInfoStr, JudgeInfo.class);
+            String judgeInfoMessage = judgeInfo.getMessage();
+            if (JudgeInfoMessageEnum.ACCEPTED.getText().equals(judgeInfoMessage)){
+                acceptedNum+=1;
+            }
+
             Question updateQuestion = new Question();
-            synchronized (question.getAcceptedNum()) {
-                acceptedNum = acceptedNum + 1;
-                updateQuestion.setId(questionId);
-                updateQuestion.setAcceptedNum(acceptedNum);
-                boolean save = questionFeignClient.updateQuestionById(question);//更新题目的提交数和通过数
-                if (!save) {
-                    throw new BusinessException(ErrorCode.OPERATION_ERROR, "保存数据失败");
-                }
+            updateQuestion.setId(questionId);
+            updateQuestion.setSubmitNum(submitNum);
+            updateQuestion.setAcceptedNum(acceptedNum);
+            boolean save = questionFeignClient.updateQuestionById(updateQuestion);
+            if (!save){
+                throw  new BusinessException(ErrorCode.OPERATION_ERROR,"保存失败");
             }
             // 手动确认消息
             channel.basicAck(deliveryTag, false);
