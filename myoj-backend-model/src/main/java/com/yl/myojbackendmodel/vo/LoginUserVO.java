@@ -22,6 +22,11 @@ public class LoginUserVO implements Serializable {
     private String userName;
 
     /**
+     * 用户账号
+     */
+    private String userAccount;
+
+    /**
      * 用户头像
      */
     private String userAvatar;
@@ -36,6 +41,16 @@ public class LoginUserVO implements Serializable {
      */
     private String userRole;
 
+    /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
+     * 用户状态：正常、注销
+     */
+    private String userState;
+    /**
 
     /**
      * token

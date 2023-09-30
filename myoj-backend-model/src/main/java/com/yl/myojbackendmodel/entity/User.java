@@ -35,9 +35,9 @@ public class User implements Serializable {
     private String unionId;
 
     /**
-     * 公众号openId
+     * 邮箱
      */
-    private String mpOpenId;
+    private String email;
 
     /**
      * 用户昵称
@@ -59,6 +59,10 @@ public class User implements Serializable {
      */
     private String userRole;
 
+    /**
+     * 用户状态：正常、注销
+     */
+    private String userState;
     /**
      * 创建时间
      */
