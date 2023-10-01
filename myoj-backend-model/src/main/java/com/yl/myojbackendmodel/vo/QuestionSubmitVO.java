@@ -2,6 +2,8 @@ package com.yl.myojbackendmodel.vo;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.yl.myojbackendmodel.codesandbox.JudgeInfo;
 import com.yl.myojbackendmodel.entity.QuestionSubmit;
 import lombok.Data;
@@ -20,6 +22,7 @@ public class QuestionSubmitVO implements Serializable {
     /**
      * id
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     /**
