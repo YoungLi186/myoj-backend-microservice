@@ -18,7 +18,6 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 @ComponentScan("com.yl")
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages = {"com.yl.myojbackendserviceclient.service"})
-//@EnableRedisHttpSession
 public class MyojBackendQuestionServiceApplication {
 
     public static void main(String[] args) {

@@ -43,6 +43,10 @@ public class GlobalAuthFilter implements GlobalFilter, Ordered {
             // Mono 反应式编程
             return response.writeWith(Mono.just(dataBuffer));
         }
+
+
+
+
         return chain.filter(exchange);
     }
 

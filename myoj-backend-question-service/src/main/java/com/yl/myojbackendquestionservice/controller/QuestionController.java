@@ -2,6 +2,7 @@ package com.yl.myojbackendquestionservice.controller;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.yl.myojbackendcommon.annotation.AuthCheck;
@@ -20,6 +21,7 @@ import com.yl.myojbackendmodel.entity.QuestionSubmit;
 import com.yl.myojbackendmodel.entity.User;
 import com.yl.myojbackendmodel.vo.QuestionSubmitVO;
 import com.yl.myojbackendmodel.vo.QuestionVO;
+import com.yl.myojbackendquestionservice.manage.RedisLimiter;
 import com.yl.myojbackendquestionservice.service.QuestionService;
 import com.yl.myojbackendquestionservice.service.QuestionSubmitService;
 import com.yl.myojbackendserviceclient.service.UserFeignClient;
@@ -46,6 +48,9 @@ public class QuestionController {
     private UserFeignClient userFeignClient;
     @Resource
     private QuestionSubmitService questionSubmitService;
+
+    @Resource
+    private RedisLimiter redisLimiter;
 
     private final static Gson GSON = new Gson();
 
@@ -325,6 +330,7 @@ public class QuestionController {
      * @return 提交记录的id
      */
     @PostMapping("/question_submit/do")
+    @SentinelResource("doQuestionSubmit")
     public BaseResponse<Long> doQuestionSubmit(@RequestBody QuestionSubmitAddRequest questionSubmitAddRequest,
                                                HttpServletRequest request) {
         if (questionSubmitAddRequest == null || questionSubmitAddRequest.getQuestionId() <= 0) {
@@ -332,7 +338,13 @@ public class QuestionController {
         }
         // 登录成功才可以提交题目
         String token = request.getHeader("Authorization");
+
         final User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+        // 限流
+        boolean rateLimit = redisLimiter.doRateLimit(loginUser.getId().toString());
+        if (!rateLimit) {
+            return ResultUtils.error(ErrorCode.TOO_MANY_REQUEST, "提交过于频繁,请稍后重试");
+        }
         long result = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
         return ResultUtils.success(result);
     }
