@@ -52,7 +52,7 @@ public class InitRabbitMq {
         }
     }
 
-    public static void main(String[] args) {
-        doInit();
-    }
+//    public static void main(String[] args) {
+//        doInit();
+//    }
 }

@@ -54,10 +54,8 @@ public class QuestionController {
 
     private final static Gson GSON = new Gson();
 
-    // region 增删改查
-
     /**
-     * 创建
+     * 创建题目
      *
      * @param questionAddRequest
      * @param request
@@ -169,7 +167,7 @@ public class QuestionController {
     }
 
     /**
-     * 根据 id 获取(脱敏)
+     * 根据 id 获取题目(脱敏)
      *
      * @param id
      * @return
@@ -187,7 +185,7 @@ public class QuestionController {
     }
 
     /**
-     * 根据 id 获取
+     * 根据 id 获取题目
      *
      * @param id
      * @return
@@ -213,7 +211,7 @@ public class QuestionController {
     }
 
     /**
-     * 分页获取列表（封装类）
+     * 分页获取题目列表（封装类）
      *
      * @param questionQueryRequest
      * @param request
@@ -231,76 +229,76 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
     }
 
-    /**
-     * 分页获取当前用户创建的资源列表
-     *
-     * @param questionQueryRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/my/list/page/vo")
-    public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
-                                                                 HttpServletRequest request) {
-        if (questionQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        String token = request.getHeader("Authorization");
-        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
-        questionQueryRequest.setUserId(loginUser.getId());
-        long current = questionQueryRequest.getCurrent();
-        long size = questionQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-        Page<Question> questionPage = questionService.page(new Page<>(current, size),
-                questionService.getQueryWrapper(questionQueryRequest));
-        return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
-    }
+//    /**
+//     * 分页获取当前用户创建的资源列表
+//     *
+//     * @param questionQueryRequest
+//     * @param request
+//     * @return
+//     */
+//    @PostMapping("/my/list/page/vo")
+//    public BaseResponse<Page<QuestionVO>> listMyQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
+//                                                                 HttpServletRequest request) {
+//        if (questionQueryRequest == null) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+//        }
+//        String token = request.getHeader("Authorization");
+//        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+//        questionQueryRequest.setUserId(loginUser.getId());
+//        long current = questionQueryRequest.getCurrent();
+//        long size = questionQueryRequest.getPageSize();
+//        // 限制爬虫
+//        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+//        Page<Question> questionPage = questionService.page(new Page<>(current, size),
+//                questionService.getQueryWrapper(questionQueryRequest));
+//        return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+//    }
 
-    /**
-     * 编辑（用户）
-     *
-     * @param questionEditRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/edit")
-    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {
-        if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        Question question = new Question();
-        BeanUtils.copyProperties(questionEditRequest, question);
-        List<String> tags = questionEditRequest.getTags();
-        if (tags != null) {
-            question.setTags(GSON.toJson(tags));
-        }
-        JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
-        if (judgeConfig != null) {
-            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
-        }
-
-        List<JudgeCase> judgeCases = questionEditRequest.getJudgeCase();
-
-        if (judgeCases != null) {
-            question.setJudgeCase(JSONUtil.toJsonStr(judgeCases));
-        }
-
-
-        // 参数校验
-        String token = request.getHeader("Authorization");
-        questionService.validQuestion(question, false);
-        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
-        long id = questionEditRequest.getId();
-        // 判断是否存在
-        Question oldQuestion = questionService.getById(id);
-        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
-        // 仅本人或管理员可编辑
-        if (!oldQuestion.getUserId().equals(loginUser.getId()) && !userFeignClient.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-        }
-        boolean result = questionService.updateById(question);
-        return ResultUtils.success(result);
-    }
+//    /**
+//     * 编辑题目（用户和管理员）
+//     *
+//     * @param questionEditRequest
+//     * @param request
+//     * @return
+//     */
+//    @PostMapping("/edit")
+//    public BaseResponse<Boolean> editQuestion(@RequestBody QuestionEditRequest questionEditRequest, HttpServletRequest request) {
+//        if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
+//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+//        }
+//        Question question = new Question();
+//        BeanUtils.copyProperties(questionEditRequest, question);
+//        List<String> tags = questionEditRequest.getTags();
+//        if (tags != null) {
+//            question.setTags(GSON.toJson(tags));
+//        }
+//        JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
+//        if (judgeConfig != null) {
+//            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
+//        }
+//
+//        List<JudgeCase> judgeCases = questionEditRequest.getJudgeCase();
+//
+//        if (judgeCases != null) {
+//            question.setJudgeCase(JSONUtil.toJsonStr(judgeCases));
+//        }
+//
+//
+//        // 参数校验
+//        String token = request.getHeader("Authorization");
+//        questionService.validQuestion(question, false);
+//        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+//        long id = questionEditRequest.getId();
+//        // 判断是否存在
+//        Question oldQuestion = questionService.getById(id);
+//        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
+//        // 仅本人或管理员可编辑
+//        if (!oldQuestion.getUserId().equals(loginUser.getId()) && !userFeignClient.isAdmin(loginUser)) {
+//            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+//        }
+//        boolean result = questionService.updateById(question);
+//        return ResultUtils.success(result);
+//    }
 
 
     /**
