@@ -11,6 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -23,6 +24,7 @@ import java.util.Map;
  * @Description: com.yl.myojbackendgateway.filter
  * jwt全局鉴权
  */
+@Component
 public class AuthFilter implements GlobalFilter, Ordered {
     /**
      * 如果配置文件中的字符串是用,隔开的 springboot 在value时会自动变成 List<String> 的数组
@@ -99,6 +101,6 @@ public class AuthFilter implements GlobalFilter, Ordered {
      */
     @Override
     public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE;//最低优先级
+        return Ordered.LOWEST_PRECEDENCE;
     }
 }

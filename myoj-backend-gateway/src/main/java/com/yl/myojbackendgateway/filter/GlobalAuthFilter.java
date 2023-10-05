@@ -44,9 +44,6 @@ public class GlobalAuthFilter implements GlobalFilter, Ordered {
             return response.writeWith(Mono.just(dataBuffer));
         }
 
-
-
-
         return chain.filter(exchange);
     }
 
