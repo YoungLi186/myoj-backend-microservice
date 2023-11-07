@@ -56,11 +56,11 @@ public class JudgeServiceImpl implements JudgeService {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "题目不存在");
         }
 
-        //2）更改题目提交的状态为判题中，防止重复执行代码
-        //判断题目的状态
+        //2）判断题目的状态
         if (!questionSubmit.getStatus().equals(QuestionSubmitStatusEnum.WAITING.getValue())) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "题目正在判题中");
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "判题已经结束");
         }
+
         QuestionSubmit questionSubmitUpdate = new QuestionSubmit();
         questionSubmitUpdate.setId(questionSubmitId);
         questionSubmitUpdate.setStatus(QuestionSubmitStatusEnum.RUNNING.getValue());

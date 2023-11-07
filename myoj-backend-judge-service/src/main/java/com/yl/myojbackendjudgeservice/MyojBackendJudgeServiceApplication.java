@@ -9,8 +9,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import static com.yl.myojbackendjudgeservice.rabbitmq.InitRabbitMq.doInit;
-
 @SpringBootApplication(exclude = {RedisAutoConfiguration.class})
 @EnableScheduling
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
@@ -20,7 +18,7 @@ import static com.yl.myojbackendjudgeservice.rabbitmq.InitRabbitMq.doInit;
 public class MyojBackendJudgeServiceApplication {
 
     public static void main(String[] args) {
-        doInit();//启动消息队列
+       // doInit();//启动消息队列
         SpringApplication.run(MyojBackendJudgeServiceApplication.class, args);
     }
 
