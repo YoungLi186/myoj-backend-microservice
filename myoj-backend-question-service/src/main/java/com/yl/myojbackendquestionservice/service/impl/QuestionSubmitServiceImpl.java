@@ -18,6 +18,7 @@ import com.yl.myojbackendmodel.enums.QuestionSubmitStatusEnum;
 import com.yl.myojbackendmodel.vo.QuestionSubmitVO;
 import com.yl.myojbackendquestionservice.mapper.QuestionSubmitMapper;
 import com.yl.myojbackendquestionservice.mq.CodeMqProducer;
+import com.yl.myojbackendquestionservice.mq.MQProducerService;
 import com.yl.myojbackendquestionservice.service.QuestionService;
 import com.yl.myojbackendquestionservice.service.QuestionSubmitService;
 import com.yl.myojbackendserviceclient.service.JudgeFeignClient;
@@ -58,7 +59,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
 
     @Resource
-    private CodeMqProducer codeMqProducer;
+    private MQProducerService mqProducerService;
 
 
     /**
@@ -96,7 +97,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         questionSubmit.setCode(questionSubmitAddRequest.getCode());
         questionSubmit.setLanguage(questionSubmitAddRequest.getLanguage());
 
-        // 设置初始状态
+        // 设置题目状态为判题中
         questionSubmit.setStatus(QuestionSubmitStatusEnum.WAITING.getValue());
         questionSubmit.setJudgeInfo("{}");
 
@@ -105,10 +106,9 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "题目提交失败");
         }
 
+
         Long questionSubmitId = questionSubmit.getId();
-
-        codeMqProducer.sendMessage(CODE_EXCHANGE_NAME, CODE_ROUTING_KEY, String.valueOf(questionSubmitId));
-
+        mqProducerService.sendMsg(questionSubmitId.toString());
         return questionSubmitId;
 
     }
@@ -126,7 +126,6 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         if (questionQuerySubmitRequest == null) {
             return queryWrapper;
         }
-
         String language = questionQuerySubmitRequest.getLanguage();
         Integer status = questionQuerySubmitRequest.getStatus();
         Long userId = questionQuerySubmitRequest.getUserId();

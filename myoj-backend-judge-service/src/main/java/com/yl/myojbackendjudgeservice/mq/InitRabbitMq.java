@@ -1,11 +1,10 @@
-package com.yl.myojbackendjudgeservice.rabbitmq;
+package com.yl.myojbackendjudgeservice.mq;
 
 
 import lombok.extern.slf4j.Slf4j;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,12 +26,13 @@ public class InitRabbitMq {
             factory.setUsername("guest");
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
-            channel.exchangeDeclare(CODE_EXCHANGE_NAME, CODE_DIRECT_EXCHANGE);
 
+            //创建code交换机
+            channel.exchangeDeclare(CODE_EXCHANGE_NAME, CODE_DIRECT_EXCHANGE);
             // 创建 code 队列
             Map<String, Object> codeMap = new HashMap<>();
 
-            // code队列绑定死信交换机
+            // code队列绑定code交换机
             codeMap.put("x-dead-letter-exchange", CODE_DLX_EXCHANGE);
             codeMap.put("x-dead-letter-routing-key", CODE_DLX_ROUTING_KEY);
             channel.queueDeclare(CODE_QUEUE, true, false, false, codeMap);
