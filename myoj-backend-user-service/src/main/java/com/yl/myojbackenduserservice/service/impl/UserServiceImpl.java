@@ -111,10 +111,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Map<String, Object> tokenMap = new HashMap<>();
         tokenMap.put("id", user.getId());
         tokenMap.put("userAccount", user.getUserAccount());
+        tokenMap.put("userRole",user.getUserRole());
         String token = JwtUtils.getToken(tokenMap);
 
         // 4. 记录用户的登录态
-        request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        // request.getSession().setAttribute(USER_LOGIN_STATE, user);
         LoginUserVO loginUserVO = this.getLoginUserVO(user);
         loginUserVO.setToken(token);
 
@@ -129,8 +130,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public User getLoginUser(HttpServletRequest request) {
-
-
         String token = request.getHeader("Authorization");
         if(StrUtil.isNotBlank(token)) {
             Long usrId = JwtUtils.getClaims(token).get("id", Long.class);

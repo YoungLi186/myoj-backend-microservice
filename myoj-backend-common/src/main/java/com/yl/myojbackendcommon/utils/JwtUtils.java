@@ -1,5 +1,6 @@
 package com.yl.myojbackendcommon.utils;
 
+import com.yl.myojbackendcommon.common.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -53,6 +54,29 @@ public class JwtUtils {
 
 
     /**
+     * 根据Token 解析用户信息
+     * @param token
+     * @return
+     */
+    public static User parseJwtToken(String token){
+        if (StringUtils.isEmpty(token)) {
+            return null;
+        }
+        Claims claims = getClaims(token);
+        Long id = claims.get("id", Long.class);
+        String userAccount = claims.get("userAccount", String.class);
+        String userRole = claims.get("userRole", String.class);
+        User user = new User();
+        user.setId(id);
+        user.setUserAccount(userAccount);
+        user.setUserRole(userRole);
+        return user;
+    }
+
+
+
+
+    /**
      * 是否有效 true-有效，false-失效
      */
     public static boolean verifyToken(String token) {
@@ -72,4 +96,9 @@ public class JwtUtils {
 
         return true;
     }
+
+
+
+
+
 }

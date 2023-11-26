@@ -1,3 +1,6 @@
+package com.yl.myojbackenduserservice;
+
+import com.yl.myojbackendcommon.common.User;
 import com.yl.myojbackendcommon.utils.JwtUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringBootConfiguration;
@@ -12,8 +15,6 @@ import java.util.Map;
  * @Description: PACKAGE_NAME
  */
 @SpringBootTest
-@SpringBootConfiguration
-@ContextConfiguration
 public class TestJwtUtils {
 
 
@@ -23,22 +24,12 @@ public class TestJwtUtils {
         //生成token
         Map<String, Object> tokenMap = new HashMap<>();
         tokenMap.put("id",1);
-        tokenMap.put("userAccount", 2);
+        tokenMap.put("userAccount", "2");
+        tokenMap.put("userRole","admin");
         String token = JwtUtils.getToken(tokenMap);
+        User user = JwtUtils.parseJwtToken(token);
+        System.out.println(user);
         System.out.println(token);
-    }
-
-    void testGetClaims(){
-
-
-    }
-
-
-    @Test
-    void testParseJwtToken(){
-        Object o = JwtUtils.parseJwtToken("");
-        System.out.println(o);
-
     }
 
 }

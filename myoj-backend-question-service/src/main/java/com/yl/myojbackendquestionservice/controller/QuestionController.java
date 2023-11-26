@@ -13,6 +13,7 @@ import com.yl.myojbackendcommon.common.ResultUtils;
 import com.yl.myojbackendcommon.constant.UserConstant;
 import com.yl.myojbackendcommon.exception.BusinessException;
 import com.yl.myojbackendcommon.exception.ThrowUtils;
+import com.yl.myojbackendcommon.utils.JwtUtils;
 import com.yl.myojbackendmodel.dto.question.*;
 import com.yl.myojbackendmodel.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.yl.myojbackendmodel.dto.questionsubmit.QuestionSubmitQueryRequest;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 题目接口
@@ -87,7 +89,8 @@ public class QuestionController {
 
         questionService.validQuestion(question, true);
         String token = request.getHeader("Authorization");
-        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+        User loginUser = new User();
+        BeanUtils.copyProperties(Objects.requireNonNull(JwtUtils.parseJwtToken(token)),loginUser);
         question.setUserId(loginUser.getId());
         question.setFavourNum(0);
         question.setThumbNum(0);
@@ -110,7 +113,8 @@ public class QuestionController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String token = request.getHeader("Authorization");
-        User user = userFeignClient.getLoginUserAndPermitNull(token);
+        User user = new User();
+        BeanUtils.copyProperties(Objects.requireNonNull(JwtUtils.parseJwtToken(token)),user);
         long id = deleteRequest.getId();
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
@@ -201,7 +205,8 @@ public class QuestionController {
         }
 
         String token = request.getHeader("Authorization");
-        User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+        User loginUser = new User();
+        BeanUtils.copyProperties(Objects.requireNonNull(JwtUtils.parseJwtToken(token)),loginUser);
         if (!loginUser.getId().equals(question.getUserId()) && !userFeignClient.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
@@ -337,11 +342,12 @@ public class QuestionController {
         // 登录成功才可以提交题目
         String token = request.getHeader("Authorization");
 
-        final User loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+        User loginUser = new User();
+        BeanUtils.copyProperties(Objects.requireNonNull(JwtUtils.parseJwtToken(token)),loginUser);
         // 限流
         boolean rateLimit = redisLimiter.doRateLimit(loginUser.getId().toString());
         if (!rateLimit) {
-            return ResultUtils.error(ErrorCode.TOO_MANY_REQUEST, "提交过于频繁,请稍后重试");
+            return ResultUtils.error(ErrorCode.TOO_MANY_REQUEST, "提交频繁,请稍后重试");
         }
         long result = questionSubmitService.doQuestionSubmit(questionSubmitAddRequest, loginUser);
         return ResultUtils.success(result);
@@ -363,11 +369,10 @@ public class QuestionController {
         Page<QuestionSubmit> questionSubmitPage = questionSubmitService.page(new Page<>(current, size),
                 questionSubmitService.getQueryWrapper(questionSubmitQueryRequest));
         String token = request.getHeader("Authorization");
-        User loginUser = null;
+        User loginUser = new User();
         if (StrUtil.isNotBlank(token)) {
-            loginUser = userFeignClient.getLoginUserAndPermitNull(token);
+            BeanUtils.copyProperties(Objects.requireNonNull(JwtUtils.parseJwtToken(token)),loginUser);
         }
-
         return ResultUtils.success(questionSubmitService.getQuestionSubmitVOPage(questionSubmitPage, loginUser));
 
     }
